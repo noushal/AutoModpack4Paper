@@ -1,0 +1,15 @@
+# build output / tooling
+.gradle/
+build/
+.idea/
+*.iml
+.vscode/
+.claude/
+*.log
+gradle.properties.local
+
+# local test server (Paper jar, worlds, plugin data)
+test-server/
+
+# scratch
+*.tmp

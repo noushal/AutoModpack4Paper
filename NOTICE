@@ -1,0 +1,16 @@
+AutoModpack4Paper is an UNOFFICIAL, community project. It is not affiliated with,
+endorsed by, or supported by AutoModpack or its author.
+
+This software includes AutoModpack "core" (pl.skidam.automodpack_core), release v4.0.6,
+Copyright (c) Skidamek and contributors, licensed under the GNU LGPL v3.
+Source: https://github.com/Skidamek/AutoModpack  (tag v4.0.6, folder core/)
+A verbatim copy lives in third_party/automodpack-core/.
+
+Modification to the vendored code (only one):
+  GlobalVariables.java - path fields made non-final and a relocate(...) method added, so the
+  plugin can keep its files inside plugins/AutoModpack4Paper/.
+
+Licensed under LGPL-3.0 (see LICENSE). Source: this repository.
+
+Bundled third-party libraries (shaded, relocated): BouncyCastle (MIT-style), tomlj (Apache-2.0)
+and its ANTLR runtime (BSD). Netty, log4j and Gson are provided by the Paper server.

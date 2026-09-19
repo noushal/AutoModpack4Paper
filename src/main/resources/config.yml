@@ -1,0 +1,36 @@
+# AutoModpack4Paper configuration (unofficial; not affiliated with AutoModpack)
+host:
+  # Dedicated TCP port the modpack host listens on. Must be reachable by players.
+  port: 30037
+  # Host/IP advertised to clients. Empty = same host the player used to join.
+  advertised-host: ""
+  # Port advertised to clients. -1 = same as host.port.
+  advertised-port: -1
+
+compat:
+  # Client AutoModpack version this server advertises. Clients must match it EXACTLY, otherwise they are
+  # told to update/downgrade. Pin to the client version your players use.
+  automodpack-version: "4.0.6"
+
+# Names starting with this prefix (Floodgate) skip the AutoModpack handshake. Floodgate players are also
+# detected through the Floodgate API when present.
+bedrock-prefix: "."
+
+# Safe-file rules. Clients auto-download everything in plugins/AutoModpack4Paper/modpack/, so it is scanned before
+# every publish (startup, /am4p generate, /am4p reload). Symlinks/junctions are always flagged.
+safety:
+  # true = refuse to publish while any problem exists (recommended). false = log the problems and publish anyway.
+  enforce: true
+  allowed-top-level-dirs: [mods, config, resourcepacks, shaderpacks, kubejs, emotes]
+  allowed-root-files: [options.txt]
+  # .jar is only accepted under mods/. These extensions are rejected everywhere.
+  blocked-extensions: [exe, bat, cmd, com, scr, msi, ps1, vbs, sh, dll, so, dylib]
+  max-file-size-mb: 512
+
+# TLS certificate. Leave both empty = self-signed certificate: each player sees a ONE-TIME "trust this server?" prompt
+# in the AutoModpack client. To remove that prompt, use a certificate from a public CA (e.g. Let's Encrypt) for a domain
+# name and make players join by that domain (the certificate name must match the host they connect to).
+# Point these at the PEM files (fullchain + private key; any PEM key format). Renewals are picked up hourly or via /am4p reload.
+tls:
+  certificate-file: ""   # e.g. /etc/letsencrypt/live/play.example.com/fullchain.pem
+  private-key-file: ""   # e.g. /etc/letsencrypt/live/play.example.com/privkey.pem

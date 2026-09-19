@@ -1,0 +1,12 @@
+name: AutoModpack4Paper
+version: '${version}'
+main: dev.automodpack4paper.AutoModpack4Paper
+api-version: '26.2'
+description: Unofficial add-on that lets Paper servers work with AutoModpack clients.
+website: https://modrinth.com/plugin/automodpack4paper
+dependencies:
+  server:
+    packetevents:
+      load: BEFORE
+      required: true
+      join-classpath: true

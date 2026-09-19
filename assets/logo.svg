@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="AutoModpack4Paper logo">
+  <!-- block (modpack) -->
+  <g stroke-linejoin="round" stroke-width="14">
+    <polygon points="256,30 452,143 256,256 60,143" fill="#6cf2c8" stroke="#6cf2c8"/>
+    <polygon points="60,143 256,256 256,482 60,369" fill="#22b58f" stroke="#22b58f"/>
+    <polygon points="256,256 452,143 452,369 256,482" fill="#148468" stroke="#148468"/>
+  </g>
+  <!-- paper plane (Paper), flying out of the block -->
+  <g stroke-linejoin="round" stroke-width="12">
+    <polygon points="400,132 118,236 236,282" fill="#ffffff" stroke="#ffffff"/>
+    <polygon points="400,132 236,282 276,402" fill="#d5f5ea" stroke="#d5f5ea"/>
+    <polygon points="236,282 276,402 210,340" fill="#9fdcc9" stroke="#9fdcc9"/>
+  </g>
+</svg>
