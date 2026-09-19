@@ -13,7 +13,7 @@ nothing else to install on their side.
 
 ## Requirements
 - Paper 26.2, Java 25
-- [packetevents](https://modrinth.com/plugin/packetevents) 2.13+ (required, installed as a separate plugin)
+- [packetevents](https://modrinth.com/plugin/packetevents) **2.13.0** (required, installed as a separate plugin; other versions are untested)
 - One free TCP port for the modpack host (default **30037**), reachable by players
 - Players: Minecraft with **AutoModpack 4.0.x** (Fabric, NeoForge or Forge)
 

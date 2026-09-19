@@ -4,7 +4,7 @@
 **Slug:** automodpack4paper (checked free on Modrinth and Hangar on 2026-09-19)
 **Summary:** Unofficial add-on that lets Paper servers work with AutoModpack clients.
 **Categories:** Utility, Management. **Loader:** Paper. **Game versions:** 26.2. **Environment:** server-side.
-**License:** LGPL-3.0-only. **Dependency:** packetevents (required).
+**License:** LGPL-3.0-only. **Dependency:** packetevents 2.13.0 (required).
 
 ## Body
 
@@ -21,7 +21,7 @@ players with the AutoModpack mod get your mods, configs, resource packs and shad
 - Bedrock (Geyser/Floodgate) players are unaffected.
 
 ### Requirements
-Paper 26.2, Java 25, packetevents 2.13+, AutoModpack 4.0.x on the client. Players see a one-time certificate prompt unless you use a
+Paper 26.2, Java 25, packetevents 2.13.0 (other versions untested), AutoModpack 4.0.x on the client. Players see a one-time certificate prompt unless you use a
 CA-signed certificate (`tls.*` in `config.yml`).
 
 ### Safety

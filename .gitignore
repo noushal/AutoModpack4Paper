@@ -13,3 +13,5 @@ test-server/
 
 # scratch
 *.tmp
+bin/
+out/
