@@ -112,6 +112,38 @@ public class NetUtils {
         }
     }
 
+    // AutoModpack4Paper modification: JDK-only PEM loading (unencrypted PKCS#8 key, certificate chain).
+    public static X509Certificate[] loadCertificateChain(Path path) throws Exception {
+        try (InputStream in = new LockFreeInputStream(path)) {
+            CertificateFactory cf = CertificateFactory.getInstance("X.509");
+            var certs = cf.generateCertificates(in);
+            if (certs.isEmpty()) throw new IllegalStateException("No certificate found in " + path);
+            return certs.stream().map(c -> (X509Certificate) c).toArray(X509Certificate[]::new);
+        }
+    }
+
+    public static PrivateKey loadPrivateKey(Path path) throws Exception {
+        StringBuilder b64 = new StringBuilder();
+        for (String line : Files.readAllLines(path)) {
+            if (line.startsWith("-----")) {
+                if (line.contains("ENCRYPTED") || line.contains("RSA PRIVATE") || line.contains("EC PRIVATE")) {
+                    throw new IllegalStateException("Unsupported private key format in " + path + " (need unencrypted PKCS#8 'BEGIN PRIVATE KEY')");
+                }
+                continue;
+            }
+            b64.append(line.trim());
+        }
+        PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(Base64.getDecoder().decode(b64.toString()));
+        for (String alg : new String[]{"RSA", "EC", "Ed25519"}) {
+            try {
+                return KeyFactory.getInstance(alg).generatePrivate(spec);
+            } catch (java.security.spec.InvalidKeySpecException ignored) {
+                // try the next algorithm
+            }
+        }
+        throw new IllegalStateException("Could not parse the private key in " + path);
+    }
+
     public static void savePrivateKey(PrivateKey key, Path path) throws Exception {
         PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(key.getEncoded());
         String keyPem = "-----BEGIN PRIVATE KEY-----\n"

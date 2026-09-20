@@ -45,6 +45,8 @@ public final class PackHost {
             AM_VERSION = cfg.getString("compat.automodpack-version", "4.0.6");
 
             if (!loadServerConfig(cfg)) return fail("Could not load " + serverConfigFile + " (JSON error?)");
+            String tlsProblem = checkTlsSetting(cfg);
+            if (tlsProblem != null) return fail(tlsProblem);
 
             Files.createDirectories(modpackDir().resolve("mods"));
             String tlsError = TlsImporter.apply(log, tlsCert(cfg), tlsKey(cfg), serverCertFile, serverPrivateKeyFile, tlsMarker());
@@ -65,7 +67,9 @@ public final class PackHost {
             log.info("Modpack ready in " + (lastGeneratedAt - t) + "ms");
 
             hostServer.start();
-            log.info("Host on port " + serverConfig.bindPort + " | certificate fingerprint: " + hostServer.getCertificateFingerprint());
+            String fp = hostServer.getCertificateFingerprint();
+            log.info("Host on port " + serverConfig.bindPort + " | "
+                + (fp != null ? "certificate fingerprint: " + fp : "TLS is OFF here (external TLS termination is configured)"));
             return true;
         } catch (Throwable t) {
             t.printStackTrace();
@@ -187,6 +191,44 @@ public final class PackHost {
     /** True when the served certificate came from tls.* (CA-signed, players get no trust prompt). */
     public boolean tlsImported() {
         return Files.exists(tlsMarker());
+    }
+
+    /** AutoModpack clients always speak TLS. A plaintext listener only makes sense behind a TLS-terminating proxy. */
+    private String checkTlsSetting(FileConfiguration cfg) {
+        if (!serverConfig.disableInternalTLS) return null;
+        if (cfg.getBoolean("tls.external-termination", false)) {
+            log.warning("disableInternalTLS is true: the host port " + serverConfig.bindPort + " speaks plain TCP and MUST sit behind a "
+                + "TLS-terminating proxy, because AutoModpack clients always use TLS.");
+            return null;
+        }
+        return "disableInternalTLS is true in " + serverConfigFile.getFileName() + ", but AutoModpack clients always use TLS, so every client would fail. "
+            + "Set it to false. Only if a TLS-terminating proxy sits in front of the host port, set tls.external-termination: true in config.yml.";
+    }
+
+    /** One-line summary of the certificate situation for /am4p status. */
+    public String certificateSummary() {
+        if (!running()) return "none (the modpack host is not running)";
+        if (serverConfig != null && serverConfig.disableInternalTLS) return "TLS off (external TLS termination); no certificate served by this plugin";
+        String fp = fingerprint();
+        String mode = tlsImported()
+            ? "CA-signed (imported) - players get no trust prompt"
+            : "self-signed - players see a one-time trust prompt (see tls.* in config.yml)";
+        return mode + (fp != null ? " | fingerprint " + fp : " | no certificate loaded");
+    }
+
+    /** Explains, from the server's point of view, why a client could not use the modpack host. */
+    public String diagnose() {
+        if (serverConfig == null || hostServer == null || !hostServer.isRunning()) {
+            return "the modpack host is not running" + (lastError != null ? " (" + lastError + ")" : "");
+        }
+        if (serverConfig.disableInternalTLS || hostServer.getCertificateFingerprint() == null) {
+            return "TLS is not active on the host (disableInternalTLS is true or no certificate was loaded), but AutoModpack clients require TLS";
+        }
+        String advertised = (serverConfig.addressToSend.isBlank() ? "the address the player joined with" : serverConfig.addressToSend)
+            + ":" + serverConfig.portToSend;
+        return "the host is running with TLS on port " + serverConfig.bindPort + ", so the client most likely could not reach "
+            + advertised + " from outside (firewall / port forwarding / advertised address) or rejected the certificate; "
+            + "the client's log has the exact error (lines starting with [AutoModpack])";
     }
 
     public boolean running() {

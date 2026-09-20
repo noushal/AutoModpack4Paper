@@ -34,3 +34,20 @@ safety:
 tls:
   certificate-file: ""   # e.g. /etc/letsencrypt/live/play.example.com/fullchain.pem
   private-key-file: ""   # e.g. /etc/letsencrypt/live/play.example.com/privkey.pem
+  # ONLY if a TLS-terminating proxy (nginx stream / haproxy) sits in front of the host port AND automodpack-server.json has
+  # "disableInternalTLS": true. AutoModpack clients always use TLS, so with disableInternalTLS=true and no proxy nothing works;
+  # the plugin refuses to start the host in that case unless this is true.
+  external-termination: false
+
+login:
+  # What happens when a player HAS AutoModpack but cannot download from the modpack host
+  # (firewall, wrong advertised address, TLS problem)?
+  #   kick  = disconnect them with a message (default)
+  #   allow = let them join without the modpack
+  # If requireAutoModpackOnClient is false in automodpack/automodpack-server.json, such players are always let in.
+  on-host-error: kick
+
+# NOTE: these live in AutoModpack's own file, plugins/AutoModpack4Paper/automodpack/automodpack-server.json (NOT in this file):
+#   bindPort, addressToSend, portToSend, validateSecrets (keep true), requireAutoModpackOnClient,
+#   disableInternalTLS (keep false), nagMessage, acceptedLoaders.
+# Keys added to this file in a newer plugin version are not added automatically to an existing config.yml; missing keys use their defaults.

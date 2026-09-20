@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "dev.automodpack4paper"
-version = "0.1.0"
+version = "0.1.1"
 
 repositories {
     mavenCentral()
@@ -57,6 +57,13 @@ tasks {
         relocate("org.tomlj", "dev.automodpack4paper.libs.tomlj")
         relocate("org.antlr", "dev.automodpack4paper.libs.antlr")
         exclude("META-INF/*.SF", "META-INF/*.DSA", "META-INF/*.RSA")
+        // Keep the jar small (Hangar caps uploads at 10 MB): drop BouncyCastle parts this plugin never uses.
+        // Only certificate generation/PEM parsing (asn1, cert, operator, openssl, jcajce, jce, crypto) is needed.
+        listOf("oer", "tsp", "cmp", "crmf", "ess", "eac", "est", "dvcs", "mime", "smime", "mozilla", "dane", "its", "pkcs/jcajce").forEach {
+            exclude("org/bouncycastle/$it/**")
+            exclude("dev/automodpack4paper/libs/bouncycastle/$it/**")
+        }
+        exclude("META-INF/versions/**") // multi-release duplicates
         mergeServiceFiles()
     }
     build { dependsOn(shadowJar) }

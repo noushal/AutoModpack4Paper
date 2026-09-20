@@ -107,7 +107,9 @@ public class NettyServer {
                 }
 
                 // Shiny TLS 1.3
-                sslCtx = SslContextBuilder.forServer(serverCertFile.toFile(), serverPrivateKeyFile.toFile())
+                // AutoModpack4Paper modification: hand Netty key/certificate OBJECTS instead of PEM files, so Netty's optional
+                // BouncyCastle PEM reader (which breaks when another plugin exposes a partial BouncyCastle) is never used.
+                sslCtx = SslContextBuilder.forServer(NetUtils.loadPrivateKey(serverPrivateKeyFile), NetUtils.loadCertificateChain(serverCertFile))
                         .sslProvider(SslProvider.JDK)
                         .protocols("TLSv1.3")
                         .ciphers(Arrays.asList(

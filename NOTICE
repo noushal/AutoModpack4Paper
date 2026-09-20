@@ -6,9 +6,12 @@ Copyright (c) Skidamek and contributors, licensed under the GNU LGPL v3.
 Source: https://github.com/Skidamek/AutoModpack  (tag v4.0.6, folder core/)
 A verbatim copy lives in third_party/automodpack-core/.
 
-Modification to the vendored code (only one):
+Modifications to the vendored code (three, all small):
   GlobalVariables.java - path fields made non-final and a relocate(...) method added, so the
-  plugin can keep its files inside plugins/AutoModpack4Paper/.
+    plugin can keep its files inside plugins/AutoModpack4Paper/.
+  NettyServer.java     - the TLS context is built from a PrivateKey and X509Certificate objects instead of
+    PEM files, so Netty's optional BouncyCastle PEM reader is never used.
+  NetUtils.java        - added loadPrivateKey / loadCertificateChain (JDK-only PEM parsing) for the above.
 
 Licensed under LGPL-3.0 (see LICENSE). Source: this repository.
 

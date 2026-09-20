@@ -20,7 +20,8 @@ nothing else to install on their side.
 ## Compatibility
 | AutoModpack4Paper | Paper | Java | packetevents | AutoModpack client |
 |---|---|---|---|---|
-| 0.1.0 | 26.2 (tested on build 124) | 25 | 2.13.0 | 4.0.6 tested; any stable 4.0.x is accepted |
+| 0.1.1 | 26.2 (tested on build 124) | 25 | 2.13.0 | 4.0.6 tested; any stable 4.0.x is accepted |
+| 0.1.0 | 26.2 | 25 | 2.13.0 | same (has a known TLS start-up crash on some servers; use 0.1.1) |
 
 - Only the **4.0.x** client protocol is supported. AutoModpack's development branch uses a different, incompatible protocol; this
   plugin does not target it, and a future AutoModpack protocol change may require a plugin update.
@@ -53,8 +54,10 @@ Changes inside `modpack/` are only published by `generate`; there is no file wat
 ## Files
 - `plugins/AutoModpack4Paper/modpack/`: what clients receive.
 - `plugins/AutoModpack4Paper/config.yml`: this plugin's settings.
-- `plugins/AutoModpack4Paper/automodpack/automodpack-server.json`: AutoModpack's own server config, created on first start. Options such
-  as `bindPort` live here afterwards. Keep `validateSecrets` set to `true`.
+- `plugins/AutoModpack4Paper/automodpack/automodpack-server.json`: AutoModpack's own server config, created on first start. These
+  settings live **here, not in `config.yml`**: `bindPort`, `addressToSend`, `portToSend`, `validateSecrets` (keep `true`),
+  `requireAutoModpackOnClient`, `disableInternalTLS` (keep `false`; clients always use TLS). The plugin's `host.port` etc. only seed this
+  file the first time; afterwards edit the JSON and run `/am4p reload`.
 
 ## The player experience and certificates
 The host serves files over TLS. By default it uses a self-signed certificate, so each player sees a **one-time "trust this server?"
@@ -82,6 +85,12 @@ and never exposes RCON or any other server port. Clients still verify the TLS ce
 If the host is not running (for example the folder is empty or a scan failed), players are **not** blocked from joining; they just
 get no modpack. `/am4p status` and the server log say why.
 
+## When a player has AutoModpack but cannot download
+If a client cannot reach the modpack host (firewall, wrong `addressToSend`, TLS problem) it answers with an error and the server, by default,
+disconnects it with "The modpack download failed". Set `login.on-host-error: allow` to let such players join without the modpack instead
+(they are always let in when `requireAutoModpackOnClient` is `false`). The server log explains the likely cause: host not running, TLS not
+active, or "the host is running with TLS, so the client could not reach <address:port> from outside".
+
 ## Known limitations
 - While a join is waiting on the client, Netty's ~30 s read timeout applies (same as AutoModpack itself), so on-screen prompts must be answered within about 30 seconds.
 - Players without AutoModpack are kicked with a message (AutoModpack's `requireAutoModpackOnClient`, default on).
@@ -94,6 +103,6 @@ Output: `build/libs/AutoModpack4Paper-<version>.jar`.
 
 ## License and source
 Licensed under the **GNU LGPL v3** (see `LICENSE`), because it includes AutoModpack's LGPL-3.0 `core`. Full source, including an unmodified copy of AutoModpack
-core v4.0.6 (one small documented patch to `GlobalVariables.java`) in `third_party/automodpack-core/`, is in this repository.
+core v4.0.6 (three small documented patches: `GlobalVariables.java`, `NettyServer.java`, `NetUtils.java`) in `third_party/automodpack-core/`, is in this repository.
 Because the release jar bundles that code, you may modify it and rebuild it from this source. See `NOTICE` for attribution and bundled libraries.
 Design notes: `docs/PROTOCOL.md`.

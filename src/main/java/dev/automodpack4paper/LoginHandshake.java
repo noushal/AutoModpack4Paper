@@ -61,14 +61,16 @@ public final class LoginHandshake extends PacketListenerAbstract {
     }
 
     private final Plugin plugin;
+    private final PackHost host;
     private final Logger log;
     private volatile String bedrockPrefix;
     private final Map<User, Session> sessions = new ConcurrentHashMap<>();
     private final Set<User> releasing = ConcurrentHashMap.newKeySet();
     private volatile boolean tickResetFailedLogged;
 
-    public LoginHandshake(Plugin plugin, String bedrockPrefix) {
+    public LoginHandshake(Plugin plugin, PackHost host, String bedrockPrefix) {
         this.plugin = plugin;
+        this.host = host;
         this.log = plugin.getLogger();
         this.bedrockPrefix = bedrockPrefix == null ? "" : bedrockPrefix;
     }
@@ -195,8 +197,17 @@ public final class LoginHandshake extends PacketListenerAbstract {
                 kick(user, s, "[AutoModpack] Install/Update modpack to join");
             }
             default -> {
-                log.severe(name + ": AutoModpack host error (client answered \"" + answer + "\"). Check host.port reachability and the advertised endpoint. Fingerprint: " + fp);
-                kick(user, s, "[AutoModpack] Host server error. Please contact the server administrator to check the server logs!");
+                // "null" (or anything unexpected) = the client could not fetch the modpack from the host
+                String why = host.diagnose();
+                boolean allow = !serverConfig.requireAutoModpackOnClient
+                    || "allow".equalsIgnoreCase(plugin.getConfig().getString("login.on-host-error", "kick"));
+                log.severe(name + " could not use the modpack host (client answered \"" + answer + "\"): " + why + ".");
+                if (allow) {
+                    log.warning(name + " is allowed to join WITHOUT the modpack (login.on-host-error=allow or requireAutoModpackOnClient=false).");
+                    release(user, s);
+                } else {
+                    kick(user, s, "[AutoModpack] The modpack download failed. Reconnect and try again; if it keeps failing, tell the server admin.");
+                }
             }
         }
     }

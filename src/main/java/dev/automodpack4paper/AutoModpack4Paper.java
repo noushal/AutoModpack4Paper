@@ -24,7 +24,7 @@ public final class AutoModpack4Paper extends JavaPlugin {
             getLogger().severe("Modpack host failed to start; players are NOT being served a modpack. See above.");
         }
 
-        handshake = new LoginHandshake(this, getConfig().getString("bedrock-prefix", "."));
+        handshake = new LoginHandshake(this, host, getConfig().getString("bedrock-prefix", "."));
         com.github.retrooper.packetevents.PacketEvents.getAPI().getEventManager().registerListener(handshake);
 
         watchCertificate();
@@ -48,7 +48,9 @@ public final class AutoModpack4Paper extends JavaPlugin {
         }));
         root.then(Commands.literal("fingerprint").executes(ctx -> {
             String fp = host.fingerprint();
-            ctx.getSource().getSender().sendPlainMessage(fp == null ? "Host is not running." : "Certificate SHA-256 fingerprint: " + fp);
+            ctx.getSource().getSender().sendPlainMessage(fp == null
+                ? "No certificate is being served: " + host.certificateSummary()
+                : "Certificate SHA-256 fingerprint: " + fp);
             return 1;
         }));
         root.then(Commands.literal("generate").executes(ctx -> {
@@ -109,7 +111,7 @@ public final class AutoModpack4Paper extends JavaPlugin {
         getServer().getScheduler().runTaskAsynchronously(this, () -> {
             try {
                 boolean ok = op.getAsBoolean();
-                who.sendPlainMessage(ok ? "Done. Fingerprint: " + host.fingerprint() : "Failed: " + host.lastError());
+                who.sendPlainMessage(ok ? "Done. " + host.certificateSummary() : "Failed: " + host.lastError());
             } catch (Throwable t) {
                 getLogger().severe("Operation failed: " + t);
                 who.sendPlainMessage("Failed: " + t);
@@ -130,9 +132,6 @@ public final class AutoModpack4Paper extends JavaPlugin {
         if (host.lastGeneratedAt() > 0) {
             to.sendPlainMessage("Last generated: " + (System.currentTimeMillis() - host.lastGeneratedAt()) / 1000 + "s ago");
         }
-        to.sendPlainMessage("Certificate: " + (host.tlsImported()
-            ? "CA-signed (imported) - players get no trust prompt"
-            : "self-signed - players see a one-time trust prompt (see tls.* in config.yml)")
-            + " | fingerprint " + host.fingerprint());
+        to.sendPlainMessage("Certificate: " + host.certificateSummary());
     }
 }
